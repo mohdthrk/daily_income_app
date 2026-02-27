@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Daily Income Tracker</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<div class="container">
+
+    <h2>Welcome, Mohamed Tharik</h2>
+
+    <div class="top-buttons">
+        <button onclick="toggleTheme()">Light / Dark</button>
+        <button onclick="exportCSV()">Export CSV</button>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Qty</th>
+                <th>Buying</th>
+                <th>Selling</th>
+                <th>Profit</th>
+                <th>INR</th>
+                <th>Round Fig</th>
+            </tr>
+        </thead>
+        <tbody id="tableBody">
+        </tbody>
+    </table>
+
+    <h3>Total INR: ₹ <span id="grandTotal">0</span></h3>
+
+</div>
+
+<script>
+const TODAY = "{{ today }}";
+</script>
+<script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>

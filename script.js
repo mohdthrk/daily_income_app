@@ -1,0 +1,130 @@
+function toggleTheme() {
+    document.body.classList.toggle("dark");
+}
+
+function createRow(data = null) {
+
+    const tbody = document.getElementById("tableBody");
+    const row = document.createElement("tr");
+
+    const fields = ["date","qty","buy","sell","profit","inr","round"];
+
+    fields.forEach((field, index) => {
+
+        const td = document.createElement("td");
+        const input = document.createElement("input");
+
+        input.className = field;
+
+        if (data) {
+            input.value = data[index];
+        } else {
+            if (field === "date") input.value = TODAY;
+        }
+
+        if (field === "profit" || field === "inr" || field === "round") {
+            input.readOnly = true;
+        }
+
+        td.appendChild(input);
+        row.appendChild(td);
+    });
+
+    tbody.appendChild(row);
+    attachEvents(row);
+}
+
+function attachEvents(row) {
+
+    row.querySelectorAll(".qty, .buy, .sell").forEach(input => {
+        input.addEventListener("input", () => calculate(row));
+    });
+
+    row.querySelectorAll("input").forEach(input => {
+        input.addEventListener("keydown", function(e){
+            if(e.key === "Enter"){
+                e.preventDefault();
+                createRow();
+            }
+        });
+    });
+}
+
+function calculate(row){
+
+    const qty = parseFloat(row.querySelector(".qty").value) || 0;
+    const buy = parseFloat(row.querySelector(".buy").value) || 0;
+    const sell = parseFloat(row.querySelector(".sell").value) || 0;
+
+    const profit = sell - buy;
+    const total = profit * qty;
+    const round = Math.round(total / 100) * 100;
+
+    row.querySelector(".profit").value = profit.toFixed(2);
+    row.querySelector(".inr").value = total.toFixed(2);
+    row.querySelector(".round").value = round;
+
+    updateTotal();
+    saveData();
+}
+
+function updateTotal(){
+
+    let total = 0;
+    document.querySelectorAll(".inr").forEach(input => {
+        total += parseFloat(input.value) || 0;
+    });
+
+    document.getElementById("grandTotal").innerText = total.toFixed(2);
+}
+
+function saveData(){
+
+    let rows = [];
+    document.querySelectorAll("#tableBody tr").forEach(row => {
+
+        let rowData = [];
+        row.querySelectorAll("input").forEach(input => {
+            rowData.push(input.value);
+        });
+
+        rows.push(rowData);
+    });
+
+    localStorage.setItem("incomeData", JSON.stringify(rows));
+}
+
+function loadData(){
+
+    const saved = JSON.parse(localStorage.getItem("incomeData"));
+
+    if(saved && saved.length > 0){
+        saved.forEach(data => createRow(data));
+    } else {
+        createRow();
+    }
+
+    updateTotal();
+}
+
+function exportCSV(){
+
+    let csv = [];
+    document.querySelectorAll("#tableBody tr").forEach(row => {
+
+        let rowData = [];
+        row.querySelectorAll("input").forEach(input => {
+            rowData.push(input.value);
+        });
+
+        csv.push(rowData.join(","));
+    });
+
+    const blob = new Blob([csv.join("\n")], {type:"text/csv"});
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = "daily_income.csv";
+    link.click();
+}
+
+document.addEventListener("DOMContentLoaded", loadData);
